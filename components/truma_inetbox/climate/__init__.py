@@ -1,5 +1,5 @@
-from esphome.components import climate
 import esphome.config_validation as cv
+from esphome.components import climate
 import esphome.codegen as cg
 from esphome.const import (
     CONF_ID,
