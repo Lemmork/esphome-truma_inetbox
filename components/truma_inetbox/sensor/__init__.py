@@ -17,7 +17,6 @@ from esphome.const import (
     UNIT_EMPTY,
     ICON_GAS_CYLINDER,
     ICON_POWER,
-    ICON_CLOCK, # Neu hinzugefügt
 )
 from .. import truma_inetbox_ns, CONF_TRUMA_INETBOX_ID, TrumaINetBoxApp
 
@@ -90,13 +89,13 @@ CONF_SUPPORTED_TYPE = {
     "TIMER_START_TIME": {
         CONF_CLASS: TRUMA_SENSOR_TYPE_dummy_ns.TIMER_START_TIME,
         CONF_UNIT_OF_MEASUREMENT: UNIT_EMPTY,
-        CONF_ICON: ICON_CLOCK,
+        CONF_ICON: "mdi:clock-start",
         CONF_ACCURACY_DECIMALS: 0,
     },
     "TIMER_STOP_TIME": {
         CONF_CLASS: TRUMA_SENSOR_TYPE_dummy_ns.TIMER_STOP_TIME,
         CONF_UNIT_OF_MEASUREMENT: UNIT_EMPTY,
-        CONF_ICON: ICON_CLOCK,
+        CONF_ICON: "mdi:clock-end",
         CONF_ACCURACY_DECIMALS: 0,
     },
     "TIMER_ROOM_TEMPERATURE": {
