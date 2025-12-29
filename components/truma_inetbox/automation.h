@@ -82,10 +82,13 @@ template<typename... Ts> class TimerActivateAction : public Action<Ts...>, publi
 
   void play(const Ts &... x) override {
     this->parent_->get_timer()->action_timer_activate(
-        this->start_.value(x...), this->stop_.value(x...), this->room_temperature_.value(x...),
-        this->heating_mode_.value_or(x..., HeatingMode::HEATING_MODE_OFF), this->water_temperature_.value_or(x..., 0),
-        this->energy_mix_.value_or(x..., EnergyMix::ENERGY_MIX_NONE),
-        this->watt_.value_or(x..., ElectricPowerLevel::ELECTRIC_POWER_LEVEL_0));
+        this->start_.value(x...), 
+        this->stop_.value(x...), 
+        this->room_temperature_.value(x...),
+        (HeatingMode)this->heating_mode_.value_or(x..., (uint16_t)HeatingMode::HEATING_MODE_OFF), 
+        this->water_temperature_.value_or(x..., 0),
+        (EnergyMix)this->energy_mix_.value_or(x..., (uint8_t)EnergyMix::ENERGY_MIX_NONE),
+        (ElectricPowerLevel)this->watt_.value_or(x..., (uint16_t)ElectricPowerLevel::ELECTRIC_POWER_LEVEL_0));
   }
 };
 
