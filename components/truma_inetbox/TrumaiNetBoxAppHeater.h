@@ -17,6 +17,7 @@ class TrumaiNetBoxAppHeater : public TrumaStausFrameResponseStorage<StatusFrameH
   float get_current_water_temperature() const { return (float)this->status_.current_temp_water / 10.0f; }
   float get_target_room_temperature() const { return (float)this->status_.target_temp_room / 10.0f; }
   uint8_t get_target_water_temperature() const { return this->status_.target_temp_water; }
+  
   uint8_t get_heating_mode() const { return (uint8_t)this->status_.heating_mode; }
   uint8_t get_operating_status() const { return (uint8_t)this->status_.operating_status; }
   uint16_t get_error_code() const { return this->status_.error_code; }

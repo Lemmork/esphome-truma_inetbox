@@ -18,10 +18,10 @@
 namespace esphome {
 namespace truma_inetbox {
 
-// Vorab-Deklaration der Hauptklasse
+// Vorwärtsdeklaration der App-Klasse, damit der Sensor sie kennt
 class TrumaiNetBoxApp;
 
-// Definition der Sensor-Typen (muss mit der enum in der __init__.py übereinstimmen)
+// Definition der Sensor-Typen
 enum class TRUMA_SENSOR_TYPE {
   CURRENT_ROOM_TEMPERATURE,
   CURRENT_WATER_TEMPERATURE,
@@ -38,12 +38,13 @@ enum class TRUMA_SENSOR_TYPE {
   TIMER_WATER_TEMPERATURE,
 };
 
-// Die Sensor-Klasse, die sich die Daten von der App "holt"
+// Die Sensor-Klasse
 class TrumaSensor : public sensor::Sensor, public PollingComponent, public Parented<TrumaiNetBoxApp> {
  public:
-  void set_type(TRUMA_SENSOR_TYPE type) { type_ = type; }
+  // Konstruktor setzt Polling auf 10 Sekunden (Standardwert)
+  TrumaSensor() : PollingComponent(10000) {}
   
-  // Polling-Intervall festlegen (Standard 60s, kann in YAML überschrieben werden)
+  void set_type(TRUMA_SENSOR_TYPE type) { type_ = type; }
   void update() override;
 
  protected:
@@ -52,6 +53,7 @@ class TrumaSensor : public sensor::Sensor, public PollingComponent, public Paren
 
 #define LIN_PID_TRUMA_INET_BOX 0x18
 
+// WICHTIG: Hier nur von LinBusProtocol erben (das ist bereits eine Component)
 class TrumaiNetBoxApp : public LinBusProtocol {
  public:
   TrumaiNetBoxApp();
@@ -79,7 +81,6 @@ class TrumaiNetBoxApp : public LinBusProtocol {
 #endif  // USE_TIME
 
  protected:
-  // ... (Rest der bestehenden protected Sektion bleibt unverändert)
   uint32_t device_registered_ = 0;
   uint32_t init_requested_ = 0;
   uint32_t init_recieved_ = 0;
@@ -105,7 +106,8 @@ class TrumaiNetBoxApp : public LinBusProtocol {
 
   bool answer_lin_order_(const uint8_t pid) override;
   bool lin_read_field_by_identifier_(uint8_t identifier, std::array<uint8_t, 5> *response) override;
-  const uint8_t *lin_multiframe_recieved(const uint8_t *message, const uint8_t message_len, uint8_t *return_len) override;
+  const uint8_t *lin_multiframe_recieved(const uint8_t *message, const uint8_t message_len,
+                                          uint8_t *return_len) override;
   bool has_update_to_submit_();
 };
 
