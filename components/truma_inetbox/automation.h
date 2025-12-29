@@ -75,10 +75,10 @@ template<typename... Ts> class TimerActivateAction : public Action<Ts...>, publi
   TEMPLATABLE_VALUE(u_int16_t, start)
   TEMPLATABLE_VALUE(u_int16_t, stop)
   TEMPLATABLE_VALUE(uint8_t, room_temperature)
-  TEMPLATABLE_VALUE(HeatingMode, heating_mode)
+  TEMPLATABLE_VALUE(uint16_t, heating_mode)
   TEMPLATABLE_VALUE(uint8_t, water_temperature)
-  TEMPLATABLE_VALUE(EnergyMix, energy_mix)
-  TEMPLATABLE_VALUE(ElectricPowerLevel, watt)
+  TEMPLATABLE_VALUE(uint8_t, energy_mix)
+  TEMPLATABLE_VALUE(uint16_t, watt)
 
   void play(const Ts &... x) override {
     this->parent_->get_timer()->action_timer_activate(
