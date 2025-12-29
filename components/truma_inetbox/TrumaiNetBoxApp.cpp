@@ -419,7 +419,7 @@ void TrumaSensor::update() {
       state = heater->get_target_room_temperature();
       break;
     case TRUMA_SENSOR_TYPE::TARGET_WATER_TEMPERATURE:
-      state = heater->get_target_water_temperature();
+      state = (float)heater->get_target_water_temperature();
       break;
     case TRUMA_SENSOR_TYPE::HEATING_MODE:
       state = (float)heater->get_heating_mode();

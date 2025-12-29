@@ -52,7 +52,7 @@ class TrumaSensor : public sensor::Sensor, public PollingComponent, public Paren
 
 #define LIN_PID_TRUMA_INET_BOX 0x18
 
-class TrumaiNetBoxApp : public LinBusProtocol, public Component {
+class TrumaiNetBoxApp : public LinBusProtocol {
  public:
   TrumaiNetBoxApp();
   void update() override;
