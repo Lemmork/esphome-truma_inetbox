@@ -401,6 +401,60 @@ bool TrumaiNetBoxApp::has_update_to_submit_() {
   }
   return false;
 }
+void TrumaSensor::update() {
+  if (this->parent_ == nullptr) return;
 
+  float state = NAN;
+  auto *heater = this->parent_->get_heater();
+  auto *timer = this->parent_->get_timer();
+
+  switch (this->type_) {
+    case TRUMA_SENSOR_TYPE::CURRENT_ROOM_TEMPERATURE:
+      state = heater->get_current_room_temperature();
+      break;
+    case TRUMA_SENSOR_TYPE::CURRENT_WATER_TEMPERATURE:
+      state = heater->get_current_water_temperature();
+      break;
+    case TRUMA_SENSOR_TYPE::TARGET_ROOM_TEMPERATURE:
+      state = heater->get_target_room_temperature();
+      break;
+    case TRUMA_SENSOR_TYPE::TARGET_WATER_TEMPERATURE:
+      state = heater->get_target_water_temperature();
+      break;
+    case TRUMA_SENSOR_TYPE::HEATING_MODE:
+      state = (float)heater->get_heating_mode();
+      break;
+    case TRUMA_SENSOR_TYPE::OPERATING_STATUS:
+      state = (float)heater->get_operating_status();
+      break;
+    case TRUMA_SENSOR_TYPE::HEATER_ERROR_CODE:
+      state = (float)heater->get_error_code();
+      break;
+    case TRUMA_SENSOR_TYPE::TIMER_START_TIME:
+      state = (float)timer->get_start_time();
+      break;
+    case TRUMA_SENSOR_TYPE::TIMER_STOP_TIME:
+      state = (float)timer->get_stop_time();
+      break;
+    case TRUMA_SENSOR_TYPE::TIMER_ROOM_TEMPERATURE:
+      state = timer->get_room_temperature();
+      break;
+    case TRUMA_SENSOR_TYPE::TIMER_WATER_TEMPERATURE:
+      state = (float)timer->get_water_temperature();
+      break;
+    case TRUMA_SENSOR_TYPE::ELECTRIC_POWER_LEVEL:
+      state = (float)heater->get_electric_power_level();
+      break;
+    case TRUMA_SENSOR_TYPE::ENERGY_MIX:
+      state = (float)heater->get_energy_mix();
+      break;
+    default:
+      break;
+  }
+
+  if (!std::isnan(state) && this->state != state) {
+    this->publish_state(state);
+  }
+}
 }  // namespace truma_inetbox
 }  // namespace esphome

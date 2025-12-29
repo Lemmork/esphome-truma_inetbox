@@ -129,9 +129,7 @@ def set_default_based_on_type():
     return set_defaults_
 
 # Geändertes Schema für Kompatibilität mit ESPHome 2025
-CONFIG_SCHEMA = sensor.sensor_schema(
-    state_class=STATE_CLASS_MEASUREMENT
-).extend(
+CONFIG_SCHEMA = sensor.sensor_schema().extend(
     cv.Schema({
         cv.GenerateID(): cv.declare_id(TrumaSensor),
         cv.GenerateID(CONF_TRUMA_INETBOX_ID): cv.use_id(TrumaINetBoxApp),
