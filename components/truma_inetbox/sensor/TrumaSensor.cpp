@@ -8,6 +8,7 @@ namespace truma_inetbox {
 static const char *const TAG = "truma_inetbox.sensor";
 
 void TrumaSensor::setup() {
+  // Callback für Heater-Daten
   this->parent_->get_heater()->add_on_message_callback([this](const StatusFrameHeater *status_heater) {
     switch (this->type_) {
       case TRUMA_SENSOR_TYPE::CURRENT_ROOM_TEMPERATURE:
@@ -20,7 +21,7 @@ void TrumaSensor::setup() {
         this->publish_state(temp_code_to_decimal(status_heater->target_temp_room));
         break;
       case TRUMA_SENSOR_TYPE::TARGET_WATER_TEMPERATURE:
-        this->publish_state(temp_code_to_decimal(status_heater->target_temp_water));
+        this->publish_state(static_cast<float>(status_heater->target_temp_water));
         break;
       case TRUMA_SENSOR_TYPE::HEATING_MODE:
         this->publish_state(static_cast<float>(status_heater->heating_mode));
@@ -39,8 +40,25 @@ void TrumaSensor::setup() {
         this->publish_state(errorcode);
         break;
       }
-      default:
+      default: break;
+    }
+  });
+
+  this->parent_->get_timer()->add_on_message_callback([this](const StatusFrameTimer *status_timer) {
+    switch (this->type_) {
+      case TRUMA_SENSOR_TYPE::TIMER_START_TIME:
+        this->publish_state(static_cast<float>(status_timer->timer_start_hours * 100 + status_timer->timer_start_minutes));
         break;
+      case TRUMA_SENSOR_TYPE::TIMER_STOP_TIME:
+        this->publish_state(static_cast<float>(status_timer->timer_stop_hours * 100 + status_timer->timer_stop_minutes));
+        break;
+      case TRUMA_SENSOR_TYPE::TIMER_ROOM_TEMPERATURE:
+        this->publish_state(temp_code_to_decimal(status_timer->timer_target_temp_room));
+        break;
+      case TRUMA_SENSOR_TYPE::TIMER_WATER_TEMPERATURE:
+        this->publish_state(static_cast<float>(status_timer->timer_target_temp_water));
+        break;
+      default: break;
     }
   });
 }
@@ -49,5 +67,6 @@ void TrumaSensor::dump_config() {
   LOG_SENSOR("", "Truma Sensor", this);
   ESP_LOGCONFIG(TAG, "  Type '%s'", enum_to_c_str(this->type_));
 }
+
 }  // namespace truma_inetbox
 }  // namespace esphome
