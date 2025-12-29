@@ -1,7 +1,6 @@
 #pragma once
 
 #include "esphome/core/component.h"
-#include "esphome/components/sensor/sensor.h"
 #include "LinBusProtocol.h"
 #include "TrumaStructs.h"
 #include "TrumaiNetBoxAppAirconAuto.h"
@@ -20,35 +19,8 @@ namespace truma_inetbox {
 
 class TrumaiNetBoxApp; // Forward Declaration
 
-enum class TRUMA_SENSOR_TYPE {
-  CURRENT_ROOM_TEMPERATURE,
-  CURRENT_WATER_TEMPERATURE,
-  TARGET_ROOM_TEMPERATURE,
-  TARGET_WATER_TEMPERATURE,
-  HEATING_MODE,
-  ELECTRIC_POWER_LEVEL,
-  ENERGY_MIX,
-  OPERATING_STATUS,
-  HEATER_ERROR_CODE,
-  TIMER_START_TIME,
-  TIMER_STOP_TIME,
-  TIMER_ROOM_TEMPERATURE,
-  TIMER_WATER_TEMPERATURE,
-};
-
-class TrumaSensor : public sensor::Sensor, public PollingComponent, public Parented<TrumaiNetBoxApp> {
- public:
-  TrumaSensor() : PollingComponent(10000) {}
-  void set_type(TRUMA_SENSOR_TYPE type) { type_ = type; }
-  void update() override;
-
- protected:
-  TRUMA_SENSOR_TYPE type_;
-};
-
 #define LIN_PID_TRUMA_INET_BOX 0x18
 
-// FIX: Nur von LinBusProtocol erben, da dieses schon von Component erbt!
 class TrumaiNetBoxApp : public LinBusProtocol {
  public:
   TrumaiNetBoxApp();
