@@ -12,10 +12,10 @@ class TrumaiNetBoxAppTimer : public TrumaStausFrameResponseStorage<StatusFrameTi
   void create_update_data(StatusFrame *response, uint8_t *response_len, uint8_t command_counter) override;
   void dump_data() const override;
 
-  uint16_t get_start_time() const { return (this->data_.start_hour * 100) + this->data_.start_minute; }
-  uint16_t get_stop_time() const { return (this->data_.stop_hour * 100) + this->data_.stop_minute; }
+  uint16_t get_start_time() const { return (uint16_t)((this->data_.timer_start_hours * 100) + this->data_.timer_start_minutes); }
+  uint16_t get_stop_time() const { return (uint16_t)((this->data_.timer_stop_hours * 100) + this->data_.timer_stop_minutes); }
   float get_room_temperature() const { return (float)this->data_.timer_target_temp_room / 10.0f; }
-  uint8_t get_water_temperature() const { return (uint8_t)this->data_.timer_target_temp_water.temp; }
+  uint8_t get_water_temperature() const { return (uint8_t)this->data_.timer_target_temp_water; }
 
   bool action_timer_disable();
   bool action_timer_activate(u_int16_t start, u_int16_t stop, uint8_t room_temperature,
