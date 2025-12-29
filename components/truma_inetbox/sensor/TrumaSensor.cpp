@@ -59,14 +59,14 @@ void TrumaSensor::setup() {
         break;
       }
       case TRUMA_SENSOR_TYPE::TIMER_ROOM_TEMPERATURE:
-        if (status_timer->timer_target_temp_room == 0) {
+        if (static_cast<uint8_t>(status_timer->timer_target_temp_room) == 0) {
            this->publish_state(0.0f);
         } else {
            this->publish_state(temp_code_to_decimal(status_timer->timer_target_temp_room));
         }
         break;
       case TRUMA_SENSOR_TYPE::TIMER_WATER_TEMPERATURE:
-        if (status_timer->timer_target_temp_water == 0) {
+        if (static_cast<uint8_t>(status_timer->timer_target_temp_water) == 0) {
            this->publish_state(0.0f);
         } else {
            this->publish_state(temp_code_to_decimal(status_timer->timer_target_temp_water));
