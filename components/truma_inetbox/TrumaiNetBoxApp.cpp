@@ -20,6 +20,9 @@ TrumaiNetBoxApp::TrumaiNetBoxApp() {
 
 void TrumaiNetBoxApp::update() {
   // Call listeners in after method 'lin_multiframe_recieved' call.
+  // Because 'lin_multiframe_recieved' is time critical an all these sensors can take some time.
+
+  // Run through callbacks
   this->airconAuto_.update();
   this->airconManual_.update();
   this->clock_.update();
@@ -30,8 +33,12 @@ void TrumaiNetBoxApp::update() {
   LinBusProtocol::update();
 
 #ifdef USE_TIME
+  // Update time of CP Plus automatically when
+  // - Time component configured
+  // - Update was not done
+  // - 30 seconds after init data recieved
   if (this->time_ != nullptr && !this->update_status_clock_done && this->init_recieved_ > 0) {
-    if (micros() > ((30 * 1000 * 1000) + this->init_recieved_)) {
+    if (micros() > ((30 * 1000 * 1000) + this->init_recieved_ /* 30 seconds after init recieved */)) {
       this->update_status_clock_done = true;
       this->clock_.action_write_time();
     }
@@ -40,7 +47,7 @@ void TrumaiNetBoxApp::update() {
 }
 
 const std::array<uint8_t, 4> TrumaiNetBoxApp::lin_identifier() {
-  return {0x17, 0x46, 0x00, 0x1F};
+  return {0x17 /*Supplied Id*/, 0x46 /*Supplied Id*/, 0x00 /*Function Id*/, 0x1F /*Function Id*/};
 }
 
 void TrumaiNetBoxApp::lin_heartbeat() { this->device_registered_ = micros(); }
@@ -61,6 +68,7 @@ void TrumaiNetBoxApp::lin_reset_device() {
 }
 
 bool TrumaiNetBoxApp::answer_lin_order_(const uint8_t pid) {
+  // Alive message
   if (pid == LIN_PID_TRUMA_INET_BOX) {
     std::array<uint8_t, 8> response = this->lin_empty_response_;
 
@@ -74,21 +82,21 @@ bool TrumaiNetBoxApp::answer_lin_order_(const uint8_t pid) {
 }
 
 bool TrumaiNetBoxApp::lin_read_field_by_identifier_(uint8_t identifier, std::array<uint8_t, 5> *response) {
-  if (identifier == 0x00) {
+  if (identifier == 0x00 /* LIN Product Identification */) {
     auto lin_identifier = this->lin_identifier();
     (*response)[0] = lin_identifier[0];
     (*response)[1] = lin_identifier[1];
     (*response)[2] = lin_identifier[2];
     (*response)[3] = lin_identifier[3];
-    (*response)[4] = 0x01;
+    (*response)[4] = 0x01;  // Variant
     return true;
-  } else if (identifier == 0x20) {
+  } else if (identifier == 0x20 /* Product details to display in CP plus */) {
     auto lin_identifier = this->lin_identifier();
     (*response)[0] = lin_identifier[0];
     (*response)[1] = lin_identifier[1];
     (*response)[2] = lin_identifier[2];
     return true;
-  } else if (identifier == 0x22) {
+  } else if (identifier == 0x22 /* unknown usage */) {
     return true;
   }
   return false;
@@ -138,7 +146,7 @@ const uint8_t *TrumaiNetBoxApp::lin_multiframe_recieved(const uint8_t *message, 
       this->clock_.create_update_data(response_frame, return_len, this->message_counter++);
       this->update_time_ = 0;
       return response;
-#endif
+#endif  // USE_TIME
     }
   }
 
@@ -148,6 +156,7 @@ const uint8_t *TrumaiNetBoxApp::lin_multiframe_recieved(const uint8_t *message, 
 
   auto statusFrame = reinterpret_cast<const StatusFrame *>(message);
   auto header = &statusFrame->genericHeader;
+  
   if (header->checksum != data_checksum(&statusFrame->raw[10], sizeof(StatusFrame) - 10, (0xFF - header->checksum)) ||
       header->header_2 != 'T' || header->header_3 != 0x01) {
     ESP_LOGE(TAG, "Truma checksum fail.");
@@ -193,15 +202,23 @@ const uint8_t *TrumaiNetBoxApp::lin_multiframe_recieved(const uint8_t *message, 
   } else if (header->message_type == STATUS_FRAME_DEVICES && header->message_length == sizeof(StatusFrameDevice)) {
     auto device = statusFrame->device;
     ESP_LOGD(TAG, "Device detected: ID %d", device.device_id);
+
     const auto truma_device = static_cast<TRUMA_DEVICE>(device.software_revision[0]);
     const auto is_CPPLUSDevice = device.device_id == 0;
 
     if (!is_CPPLUSDevice) {
-      if (device.device_id == 1) this->heater_device_ = truma_device;
-      if (device.device_id == 2) this->aircon_device_ = TRUMA_DEVICE::AIRCON_DEVICE;
+      if (device.device_id == 1) {
+        this->heater_device_ = truma_device;
+      }
+      if (device.device_id == 2) {
+        this->aircon_device_ = TRUMA_DEVICE::AIRCON_DEVICE;
+      }
     }
-    if ((device.device_count == 2 && this->heater_device_ != TRUMA_DEVICE::UNKNOWN) ||
-        (device.device_count == 3 && this->heater_device_ != TRUMA_DEVICE::UNKNOWN && this->aircon_device_ != TRUMA_DEVICE::UNKNOWN)) {
+
+    if (device.device_count == 2 && this->heater_device_ != TRUMA_DEVICE::UNKNOWN) {
+      this->init_recieved_ = micros();
+    } else if (device.device_count == 3 && this->heater_device_ != TRUMA_DEVICE::UNKNOWN &&
+               this->aircon_device_ != TRUMA_DEVICE::UNKNOWN) {
       this->init_recieved_ = micros();
     }
     return response;
@@ -215,7 +232,8 @@ bool TrumaiNetBoxApp::has_update_to_submit_() {
     this->init_requested_ = micros();
     return true;
   } else if (this->init_recieved_ == 0) {
-    if ((micros() - this->init_requested_) > 1000 * 1000 * 5) {
+    auto init_wait_time = micros() - this->init_requested_;
+    if (init_wait_time > 1000 * 1000 * 5) {
       this->init_requested_ = micros();
       return true;
     }
@@ -225,7 +243,8 @@ bool TrumaiNetBoxApp::has_update_to_submit_() {
       this->update_time_ = micros();
       return true;
     }
-    if ((micros() - this->update_time_) > 1000 * 1000 * 5) {
+    auto update_wait_time = micros() - this->update_time_;
+    if (update_wait_time > 1000 * 1000 * 5) {
       this->update_time_ = micros();
       return true;
     }
@@ -233,10 +252,7 @@ bool TrumaiNetBoxApp::has_update_to_submit_() {
   return false;
 }
 
-// -------------------------------------------------------------------------
-// IMPLEMENTIERUNG DER SENSOR UPDATE METHODE
-// -------------------------------------------------------------------------
-
+// SENSOR UPDATE LOGIC
 void TrumaSensor::update() {
   if (this->parent_ == nullptr) return;
 
@@ -288,7 +304,7 @@ void TrumaSensor::update() {
       break;
   }
 
-  if (!std::isnan(state)) {
+  if (!std::isnan(state) && this->state != state) {
     this->publish_state(state);
   }
 }

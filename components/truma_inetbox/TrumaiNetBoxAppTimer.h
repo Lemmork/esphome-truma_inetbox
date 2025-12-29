@@ -11,7 +11,7 @@ class TrumaiNetBoxAppTimer : public TrumaStausFrameResponseStorage<StatusFrameTi
   StatusFrameTimerResponse *update_prepare() override;
   void create_update_data(StatusFrame *response, uint8_t *response_len, uint8_t command_counter) override;
   void dump_data() const override;
-  
+
   uint16_t get_start_time() const { return this->status_.start_time; }
   uint16_t get_stop_time() const { return this->status_.stop_time; }
   float get_room_temperature() const { return (float)this->status_.target_temp_room / 10.0f; }

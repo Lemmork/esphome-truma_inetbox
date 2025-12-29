@@ -18,10 +18,8 @@
 namespace esphome {
 namespace truma_inetbox {
 
-// Vorwärtsdeklaration der App-Klasse, damit der Sensor sie kennt
-class TrumaiNetBoxApp;
+class TrumaiNetBoxApp; // Forward Declaration
 
-// Definition der Sensor-Typen
 enum class TRUMA_SENSOR_TYPE {
   CURRENT_ROOM_TEMPERATURE,
   CURRENT_WATER_TEMPERATURE,
@@ -38,12 +36,9 @@ enum class TRUMA_SENSOR_TYPE {
   TIMER_WATER_TEMPERATURE,
 };
 
-// Die Sensor-Klasse
 class TrumaSensor : public sensor::Sensor, public PollingComponent, public Parented<TrumaiNetBoxApp> {
  public:
-  // Konstruktor setzt Polling auf 10 Sekunden (Standardwert)
   TrumaSensor() : PollingComponent(10000) {}
-  
   void set_type(TRUMA_SENSOR_TYPE type) { type_ = type; }
   void update() override;
 
@@ -53,7 +48,7 @@ class TrumaSensor : public sensor::Sensor, public PollingComponent, public Paren
 
 #define LIN_PID_TRUMA_INET_BOX 0x18
 
-// WICHTIG: Hier nur von LinBusProtocol erben (das ist bereits eine Component)
+// FIX: Nur von LinBusProtocol erben, da dieses schon von Component erbt!
 class TrumaiNetBoxApp : public LinBusProtocol {
  public:
   TrumaiNetBoxApp();
