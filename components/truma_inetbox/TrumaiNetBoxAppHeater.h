@@ -16,12 +16,12 @@ class TrumaiNetBoxAppHeater : public TrumaStausFrameResponseStorage<StatusFrameH
   float get_current_room_temperature() const { return (float)this->data_.current_temp_room / 10.0f; }
   float get_current_water_temperature() const { return (float)this->data_.current_temp_water / 10.0f; }
   float get_target_room_temperature() const { return (float)this->data_.target_temp_room / 10.0f; }
-  uint8_t get_target_water_temperature() const { return this->data_.target_temp_water; }
+  uint8_t get_target_water_temperature() const { return (uint8_t)this->data_.target_temp_water.temp; }
   uint8_t get_heating_mode() const { return (uint8_t)this->data_.heating_mode; }
   uint8_t get_operating_status() const { return (uint8_t)this->data_.operating_status; }
-  uint16_t get_error_code() const { return this->data_.error_code; }
-  uint8_t get_electric_power_level() const { return (uint8_t)this->data_.electric_power_level; }
-  uint8_t get_energy_mix() const { return (uint8_t)this->data_.energy_mix; }
+  uint16_t get_error_code() const { return this->data_.error_code_low; }
+  uint8_t get_electric_power_level() const { return 0; } 
+  uint8_t get_energy_mix() const { return (uint8_t)this->data_.energy_mix_a; }
 
   bool action_heater_room(uint8_t temperature, HeatingMode mode = HeatingMode::HEATING_MODE_OFF);
   bool action_heater_water(uint8_t temperature);
