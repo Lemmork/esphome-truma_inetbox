@@ -20,7 +20,7 @@ namespace truma_inetbox {
 class TrumaiNetBoxApp; // Forward Declaration
 
 /// LIN Protocol Identifier for Truma iNetBox device
-#define LIN_PID_TRUMA_INET_BOX 0x18
+static constexpr uint8_t LIN_PID_TRUMA_INET_BOX = 0x18;
 
 /// Main application class for Truma iNetBox communication
 /// Manages all device sub-systems (heater, A/C, clock, timer, etc.) and LIN bus communication
@@ -38,42 +38,42 @@ class TrumaiNetBoxApp : public LinBusProtocol {
   void lin_reset_device() override;
 
   /// Get the main heater device type (Truma, Alde, etc.)
-  TRUMA_DEVICE get_heater_device() const { return this->heater_device_; }
+  [[nodiscard]] TRUMA_DEVICE get_heater_device() const noexcept { return this->heater_device_; }
   /// Get the air conditioning device type
-  TRUMA_DEVICE get_aircon_device() const { return this->aircon_device_; }
+  [[nodiscard]] TRUMA_DEVICE get_aircon_device() const noexcept { return this->aircon_device_; }
 
   /// Get air conditioning auto mode controller
-  TrumaiNetBoxAppAirconAuto *get_aircon_auto() { return &this->airconAuto_; }
+  [[nodiscard]] TrumaiNetBoxAppAirconAuto *get_aircon_auto() noexcept { return &this->airconAuto_; }
   /// Get air conditioning manual mode controller
-  TrumaiNetBoxAppAirconManual *get_aircon_manual() { return &this->airconManual_; }
+  [[nodiscard]] TrumaiNetBoxAppAirconManual *get_aircon_manual() noexcept { return &this->airconManual_; }
   /// Get clock/time synchronization controller
-  TrumaiNetBoxAppClock *get_clock() { return &this->clock_; }
+  [[nodiscard]] TrumaiNetBoxAppClock *get_clock() noexcept { return &this->clock_; }
   /// Get device configuration controller
-  TrumaiNetBoxAppConfig *get_config() { return &this->config_; }
+  [[nodiscard]] TrumaiNetBoxAppConfig *get_config() noexcept { return &this->config_; }
   /// Get main heating system controller
-  TrumaiNetBoxAppHeater *get_heater() { return &this->heater_; }
+  [[nodiscard]] TrumaiNetBoxAppHeater *get_heater() noexcept { return &this->heater_; }
   /// Get timer/schedule controller
-  TrumaiNetBoxAppTimer *get_timer() { return &this->timer_; }
+  [[nodiscard]] TrumaiNetBoxAppTimer *get_timer() noexcept { return &this->timer_; }
 
   /// Get timestamp of last CP+ request for diagnostic purposes
-  int64_t get_last_cp_plus_request() { return this->device_registered_; }
+  [[nodiscard]] int64_t get_last_cp_plus_request() const noexcept { return this->device_registered_; }
 
 #ifdef USE_TIME
   /// Set the real-time clock component for time synchronization
-  void set_time(time::RealTimeClock *time) { time_ = time; }
+  void set_time(time::RealTimeClock *time) noexcept { time_ = time; }
   /// Get the real-time clock component
-  time::RealTimeClock *get_time() const { return time_; }
+  [[nodiscard]] time::RealTimeClock *get_time() const noexcept { return time_; }
 #endif  // USE_TIME
 
  protected:
-  uint32_t device_registered_ = 0;     ///< Timestamp when device was registered on bus
-  uint32_t init_requested_ = 0;        ///< Timestamp when initialization was requested
-  uint32_t init_recieved_ = 0;         ///< Timestamp when initialization response was received
-  uint8_t message_counter = 1;         ///< Message sequence counter for LIN protocol
+  uint32_t device_registered_{0};     ///< Timestamp when device was registered on bus
+  uint32_t init_requested_{0};        ///< Timestamp when initialization was requested
+  uint32_t init_recieved_{0};         ///< Timestamp when initialization response was received
+  uint8_t message_counter{1};         ///< Message sequence counter for LIN protocol
 
-  TRUMA_COMPANY company_ = TRUMA_COMPANY::TRUMA;  ///< Device manufacturer (Truma or Alde)
-  TRUMA_DEVICE heater_device_ = TRUMA_DEVICE::UNKNOWN;    ///< Detected heater model
-  TRUMA_DEVICE aircon_device_ = TRUMA_DEVICE::UNKNOWN;    ///< Detected air conditioner model
+  TRUMA_COMPANY company_{TRUMA_COMPANY::TRUMA};  ///< Device manufacturer (Truma or Alde)
+  TRUMA_DEVICE heater_device_{TRUMA_DEVICE::UNKNOWN};    ///< Detected heater model
+  TRUMA_DEVICE aircon_device_{TRUMA_DEVICE::UNKNOWN};    ///< Detected air conditioner model
 
   /// Sub-system controllers
   TrumaiNetBoxAppAirconAuto airconAuto_;
@@ -83,11 +83,11 @@ class TrumaiNetBoxApp : public LinBusProtocol {
   TrumaiNetBoxAppHeater heater_;
   TrumaiNetBoxAppTimer timer_;
 
-  uint32_t update_time_ = 0;  ///< Timestamp of last update
+  uint32_t update_time_{0};  ///< Timestamp of last update
 
 #ifdef USE_TIME
-  time::RealTimeClock *time_ = nullptr;       ///< Real-time clock reference
-  bool update_status_clock_done = false;      ///< Flag for clock sync completion
+  time::RealTimeClock *time_{nullptr};       ///< Real-time clock reference
+  bool update_status_clock_done{false};      ///< Flag for clock sync completion
 #endif  // USE_TIME
 
   /// Handle incoming LIN order (command) and respond

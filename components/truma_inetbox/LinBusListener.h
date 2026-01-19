@@ -46,15 +46,15 @@ class LinBusListener : public PollingComponent, public uart::UARTDevice {
   void update() override;
 
   /// Set the LIN checksum version to use
-  void set_lin_checksum(LIN_CHECKSUM val) { this->lin_checksum_ = val; }
+  void set_lin_checksum(LIN_CHECKSUM val) noexcept { this->lin_checksum_ = val; }
   /// Set the chip select (CS) pin for SPI/bus control
-  void set_cs_pin(GPIOPin *pin) { this->cs_pin_ = pin; }
+  void set_cs_pin(GPIOPin *pin) noexcept { this->cs_pin_ = pin; }
   /// Set the fault detection pin
-  void set_fault_pin(GPIOPin *pin) { this->fault_pin_ = pin; }
+  void set_fault_pin(GPIOPin *pin) noexcept { this->fault_pin_ = pin; }
   /// Set observer mode (listen-only, no transmission)
-  void set_observer_mode(bool val) { this->observer_mode_ = val; }
+  void set_observer_mode(bool val) noexcept { this->observer_mode_ = val; }
   /// Check if LIN bus fault has been detected (persistent over 3 readings)
-  bool get_lin_bus_fault() { return fault_on_lin_bus_reported_ > 3; }
+  bool get_lin_bus_fault() const noexcept { return fault_on_lin_bus_reported_ > 3; }
 
   /// Process all queued LIN messages with timeout
   void process_lin_msg_queue(TickType_t xTicksToWait);
@@ -63,14 +63,14 @@ class LinBusListener : public PollingComponent, public uart::UARTDevice {
 
 #ifdef USE_RP2040
   /// RP2040: Handle serial data and return recommended wait time until next check
-  u_int32_t onSerialEvent();
+  uint32_t onSerialEvent();
 #endif  // USE_RP2040
 
  protected:
-  LIN_CHECKSUM lin_checksum_ = LIN_CHECKSUM::LIN_CHECKSUM_VERSION_2;
-  GPIOPin *cs_pin_ = nullptr;          ///< Chip select pin for SPI control
-  GPIOPin *fault_pin_ = nullptr;       ///< Fault detection pin
-  bool observer_mode_ = false;         ///< If true, only listen without transmitting
+  LIN_CHECKSUM lin_checksum_{LIN_CHECKSUM::LIN_CHECKSUM_VERSION_2};
+  GPIOPin *cs_pin_{nullptr};          ///< Chip select pin for SPI control
+  GPIOPin *fault_pin_{nullptr};       ///< Fault detection pin
+  bool observer_mode_{false};         ///< If true, only listen without transmitting
 
   /// Send data response on LIN bus
   void write_lin_answer_(const uint8_t *data, uint8_t len);
@@ -83,48 +83,48 @@ class LinBusListener : public PollingComponent, public uart::UARTDevice {
 
  private:
   // Microseconds per UART Baud
-  u_int32_t time_per_baud_;
+  uint32_t time_per_baud_{0};
   // 9.. 15
-  const uint8_t lin_break_length = 13;
+  static constexpr uint8_t lin_break_length = 13;
   // Microseconds per LIN Break
-  u_int32_t time_per_lin_break_;
-  const uint8_t frame_length_ = (8 /* bits */ + 1 /* Start bit */ + 2 /* Stop bits */);
+  uint32_t time_per_lin_break_{0};
+  static constexpr uint8_t frame_length_ = (8 /* bits */ + 1 /* Start bit */ + 2 /* Stop bits */);
   // Microseconds per UART Byte (UART Frame)
-  u_int32_t time_per_pid_;
+  uint32_t time_per_pid_{0};
   // Microseconds per UART Byte (UART Frame)
-  u_int32_t time_per_first_byte_;
+  uint32_t time_per_first_byte_{0};
   // Microseconds per UART Byte (UART Frame)
-  u_int32_t time_per_byte_;
+  uint32_t time_per_byte_{0};
 
-  uint8_t fault_on_lin_bus_reported_ = 0;
-  bool can_write_lin_answer_ = false;
+  uint8_t fault_on_lin_bus_reported_{0};
+  bool can_write_lin_answer_{false};
 
-  enum read_state {
-    READ_STATE_BREAK,
-    READ_STATE_SYNC,
-    READ_STATE_SID,
-    READ_STATE_DATA,
-    READ_STATE_ACT,
+  enum class ReadState {
+    BREAK,
+    SYNC,
+    SID,
+    DATA,
+    ACT,
   };
-  read_state current_state_ = READ_STATE_BREAK;
-  uint8_t current_PID_with_parity_ = 0x00;
-  uint8_t current_PID_ = 0x00;
-  bool current_PID_order_answered_ = false;
-  bool current_data_valid = true;
-  uint8_t current_data_count_ = 0;
+  ReadState current_state_{ReadState::BREAK};
+  uint8_t current_PID_with_parity_{0x00};
+  uint8_t current_PID_{0x00};
+  bool current_PID_order_answered_{false};
+  bool current_data_valid{true};
+  uint8_t current_data_count_{0};
   // up to 8 byte data frame + CRC
-  uint8_t current_data_[9] = {};
-  // // Time when the last LIN data was available.
-  uint32_t last_data_recieved_ = 0;
+  std::array<uint8_t, 9> current_data_{};
+  // Time when the last LIN data was available.
+  uint32_t last_data_recieved_{0};
 
-  void current_state_reset_() {
-    this->current_state_ = READ_STATE_BREAK;
+  void current_state_reset_() noexcept {
+    this->current_state_ = ReadState::BREAK;
     this->current_PID_with_parity_ = 0x00;
     this->current_PID_ = 0x00;
     this->current_PID_order_answered_ = false;
     this->current_data_valid = true;
     this->current_data_count_ = 0;
-    memset(this->current_data_, 0, sizeof(this->current_data_));
+    this->current_data_.fill(0);
   };
   void onReceive_();
   void read_lin_frame_();

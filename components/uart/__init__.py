@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import esphome.codegen as cg
 import esphome.config_validation as cv
@@ -31,7 +31,7 @@ from esphome.const import (
 from esphome.core import CORE
 
 # Code owner information
-CODEOWNERS = ["@esphome/core"]
+CODEOWNERS: List[str] = ["@esphome/core"]
 
 # C++ namespace and class definitions for UART components
 uart_ns = cg.esphome_ns.namespace("uart")
@@ -39,7 +39,8 @@ UARTComponent = uart_ns.class_("UARTComponent")
 
 # Platform-specific UART implementations
 IDFUARTComponent = uart_ns.class_(
-    "truma_IDFUARTComponent", UARTComponent, cg.Component)
+    "truma_IDFUARTComponent", UARTComponent, cg.Component
+)
 ESP32ArduinoUARTComponent = uart_ns.class_(
     "truma_ESP32ArduinoUARTComponent", UARTComponent, cg.Component
 )
@@ -47,7 +48,8 @@ ESP8266UartComponent = uart_ns.class_(
     "ESP8266UartComponent", UARTComponent, cg.Component
 )
 RP2040UartComponent = uart_ns.class_(
-    "truma_RP2040UartComponent", UARTComponent, cg.Component)
+    "truma_RP2040UartComponent", UARTComponent, cg.Component
+)
 
 # Generic UART device interface
 UARTDevice = uart_ns.class_("UARTDevice")
@@ -56,17 +58,17 @@ UARTDebugger = uart_ns.class_("UARTDebugger", cg.Component, automation.Action)
 UARTDummyReceiver = uart_ns.class_("UARTDummyReceiver", cg.Component)
 
 # Multiple UART instances allowed per configuration
-MULTI_CONF = True
+MULTI_CONF: bool = True
 
 
-def validate_raw_data(value):
+def validate_raw_data(value: Union[str, bytes, List[int]]) -> Union[bytes, str, List[int]]:
     """Validate and normalize raw data for UART transmission
     
     Accepts string, bytes, or list of hex values and converts to bytes.
     """
     if isinstance(value, str):
         return value.encode("utf-8")
-    if isinstance(value, str):
+    if isinstance(value, bytes):
         return value
     if isinstance(value, list):
         return cv.Schema([cv.hex_uint8_t])(value)
@@ -75,7 +77,7 @@ def validate_raw_data(value):
     )
 
 
-def validate_rx_pin(value):
+def validate_rx_pin(value: Dict[str, Any]) -> Dict[str, Any]:
     """Validate RX pin configuration
     
     Ensures RX pin is valid GPIO input. Prevents use of GPIO16/17 on ESP8266.
@@ -83,11 +85,12 @@ def validate_rx_pin(value):
     value = pins.internal_gpio_input_pin_schema(value)
     if CORE.is_esp8266 and value[CONF_NUMBER] >= 16:
         raise cv.Invalid(
-            "Pins GPIO16 and GPIO17 cannot be used as RX pins on ESP8266.")
+            "Pins GPIO16 and GPIO17 cannot be used as RX pins on ESP8266."
+        )
     return value
 
 
-def validate_invert_esp32(config):
+def validate_invert_esp32(config: Dict[str, Any]) -> Dict[str, Any]:
     """Validate invert configuration consistency for ESP32
     
     Ensures TX and RX pins have matching invert settings on ESP32.
