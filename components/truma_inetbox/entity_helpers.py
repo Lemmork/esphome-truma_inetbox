@@ -11,16 +11,16 @@ def count_id_usage(
 ) -> Callable[[Dict[str, Any]], Dict[str, Any]]:
     """Validator that counts a configuration property from another entity, for use with FINAL_VALIDATE_SCHEMA.
     If a property is already set, it will not be updated.
-    
+
     This helper automatically inherits a count-based property from other entities in the configuration.
     For example, it can automatically set the number of heater units based on how many heater
     entities are configured elsewhere.
-    
+
     Args:
         property_to_update: Path or list of path segments to the property to update
         property_to_count: Name or list of names of properties to count in the full config
         property_value: The type/value to match when counting properties
-        
+
     Returns:
         A validator function that can be used with FINAL_VALIDATE_SCHEMA
     """

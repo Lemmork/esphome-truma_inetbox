@@ -107,10 +107,10 @@ def final_validate_device_schema(
     require_hardware_uart: Optional[bool] = None,
 ) -> Callable[[Dict[str, Any]], Dict[str, Any]]:
     """Validate UART configuration for Truma device
-    
+
     Ensures that all required UART parameters match what the device expects,
     and that pins aren't shared between multiple devices.
-    
+
     Args:
         name: Component name for error messages
         baud_rate: Required baud rate
@@ -296,7 +296,7 @@ async def to_code(config: Dict[str, Any]) -> None:
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
     await uart.register_uart_device(var, config)
-    
+
     if CONF_TIME_ID in config:
         time_ = await cg.get_variable(config[CONF_TIME_ID])
         cg.add(var.set_time(time_))

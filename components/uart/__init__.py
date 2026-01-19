@@ -63,7 +63,7 @@ MULTI_CONF: bool = True
 
 def validate_raw_data(value: Union[str, bytes, List[int]]) -> Union[bytes, str, List[int]]:
     """Validate and normalize raw data for UART transmission
-    
+
     Accepts string, bytes, or list of hex values and converts to bytes.
     """
     if isinstance(value, str):
@@ -79,7 +79,7 @@ def validate_raw_data(value: Union[str, bytes, List[int]]) -> Union[bytes, str, 
 
 def validate_rx_pin(value: Dict[str, Any]) -> Dict[str, Any]:
     """Validate RX pin configuration
-    
+
     Ensures RX pin is valid GPIO input. Prevents use of GPIO16/17 on ESP8266.
     """
     value = pins.internal_gpio_input_pin_schema(value)
@@ -92,7 +92,7 @@ def validate_rx_pin(value: Dict[str, Any]) -> Dict[str, Any]:
 
 def validate_invert_esp32(config: Dict[str, Any]) -> Dict[str, Any]:
     """Validate invert configuration consistency for ESP32
-    
+
     Ensures TX and RX pins have matching invert settings on ESP32.
     """
     if (

@@ -40,7 +40,7 @@ class LinBusProtocol : public LinBusListener {
 
   /// Queue message for transmission on LIN bus
   void prepare_update_msg_(const std::array<uint8_t, 8> message) { this->updates_to_send_.push(std::move(message)); }
-  
+
   /// Check if incoming message matches our device identifier
   bool is_matching_identifier_(const uint8_t *message);
 
@@ -49,7 +49,7 @@ class LinBusProtocol : public LinBusListener {
   uint8_t multi_pdu_message_len_ = 0;
   uint8_t multi_pdu_message_frame_counter_ = 0;
   uint8_t multi_pdu_message_[64];
-  
+
   /// Handle single-frame diagnostic message
   void lin_msg_diag_single_(const uint8_t *message, uint8_t length);
   /// Handle first frame of multi-frame diagnostic message
