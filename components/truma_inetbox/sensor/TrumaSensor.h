@@ -20,7 +20,10 @@ enum class TRUMA_SENSOR_TYPE {
   TIMER_START_TIME,
   TIMER_STOP_TIME,
   TIMER_ROOM_TEMPERATURE,
-  TIMER_WATER_TEMPERATURE
+  TIMER_WATER_TEMPERATURE,
+  TIMER_HEATING_MODE,
+  TIMER_ENERGY_MIX,
+  TIMER_ELECTRIC_POWER_LEVEL
 };
 
 #ifdef ESPHOME_LOG_HAS_CONFIG
@@ -52,6 +55,15 @@ static const char *enum_to_c_str(const TRUMA_SENSOR_TYPE val) {
       break;
     case TRUMA_SENSOR_TYPE::HEATER_ERROR_CODE:
       return "HEATER_ERROR_CODE";
+      break;
+    case TRUMA_SENSOR_TYPE::TIMER_HEATING_MODE:
+      return "TIMER_HEATING_MODE";
+      break;
+    case TRUMA_SENSOR_TYPE::TIMER_ENERGY_MIX:
+      return "TIMER_ENERGY_MIX";
+      break;
+    case TRUMA_SENSOR_TYPE::TIMER_ELECTRIC_POWER_LEVEL:
+      return "TIMER_ELECTRIC_POWER_LEVEL";
       break;
     default:
       return "";

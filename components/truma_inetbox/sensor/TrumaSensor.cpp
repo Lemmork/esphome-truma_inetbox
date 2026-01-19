@@ -72,6 +72,15 @@ void TrumaSensor::setup() {
            this->publish_state(temp_code_to_decimal(status_timer->timer_target_temp_water));
         }
         break;
+      case TRUMA_SENSOR_TYPE::TIMER_HEATING_MODE:
+        this->publish_state(static_cast<float>(status_timer->timer_heating_mode));
+        break;
+      case TRUMA_SENSOR_TYPE::TIMER_ENERGY_MIX:
+        this->publish_state(static_cast<float>(status_timer->timer_energy_mix_a));
+        break;
+      case TRUMA_SENSOR_TYPE::TIMER_ELECTRIC_POWER_LEVEL:
+        this->publish_state(static_cast<float>(status_timer->timer_el_power_level_a));
+        break;
       default: break;
     }
   });
