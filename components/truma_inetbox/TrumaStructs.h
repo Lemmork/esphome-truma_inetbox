@@ -5,78 +5,83 @@
 namespace esphome {
 namespace truma_inetbox {
 
-#define LIN_SID_RESPONSE 0x40
-#define LIN_SID_READ_STATE_BUFFER 0xBA
-#define LIN_SID_FIll_STATE_BUFFFER 0xBB
+// LIN Service Identifiers for diagnostic communication
+#define LIN_SID_RESPONSE 0x40                    ///< Generic response service ID
+#define LIN_SID_READ_STATE_BUFFER 0xBA           ///< Read status/state buffer request
+#define LIN_SID_FIll_STATE_BUFFFER 0xBB          ///< Fill/write status buffer request
 
-// Response to init are the following frames:
-// - 2/3 STATUS_FRAME_DEVICES
-// - STATUS_FRAME_HEATER
-// - STATUS_FRAME_TIMER
-// - STAUTS_FRAME_CONFIG
-// - STATUS_FRAME_CLOCK
-#define STATUS_FRAME_RESPONSE_INIT_REQUEST 0x0A
-#define STATUS_FRAME_DEVICES 0x0B
-#define STATUS_FRAME_RESPONSE_ACK 0x0D
-#define STATUS_FRAME_CLOCK_RESPONSE (STATUS_FRAME_CLOCK - 1)
-#define STATUS_FRAME_CLOCK 0x15
-// TODO: Documentation and testing of config response.
-#define STAUTS_FRAME_CONFIG_RESPONSE (STAUTS_FRAME_CONFIG - 1)
-#define STAUTS_FRAME_CONFIG 0x17
-#define STATUS_FRAME_HEATER_RESPONSE (STATUS_FRAME_HEATER - 1)
-#define STATUS_FRAME_HEATER 0x33
-#define STATUS_FRAME_AIRCON_MANUAL_RESPONSE (STATUS_FRAME_AIRCON_MANUAL - 1)
-#define STATUS_FRAME_AIRCON_MANUAL 0x35
-#define STATUS_FRAME_AIRCON_AUTO_RESPONSE (STATUS_FRAME_AIRCON_AUTO - 1)
-#define STATUS_FRAME_AIRCON_AUTO 0x37
-#define STATUS_FRAME_TIMER_RESPONSE (STATUS_FRAME_TIMER - 1)
-#define STATUS_FRAME_TIMER 0x3D
-#define STATUS_FRAME_AIRCON_MANUAL_INIT_RESPONSE (STATUS_FRAME_AIRCON_MANUAL_INIT - 1)
-#define STATUS_FRAME_AIRCON_MANUAL_INIT 0x3F
-#define STATUS_FRAME_AIRCON_AUTO_INIT_RESPONSE (STATUS_FRAME_AIRCON_AUTO_INIT - 1)
-#define STATUS_FRAME_AIRCON_AUTO_INIT 0x41
+// Response frames to initialization request are transmitted in sequence:
+// - 2/3 STATUS_FRAME_DEVICES (device detection)
+// - STATUS_FRAME_HEATER (heating system status)
+// - STATUS_FRAME_TIMER (timer/schedule information)
+// - STATUS_FRAME_CONFIG (configuration data)
+// - STATUS_FRAME_CLOCK (clock/time synchronization)
 
+/// Frame IDs for various status information
+#define STATUS_FRAME_RESPONSE_INIT_REQUEST 0x0A  ///< Init request acknowledgement
+#define STATUS_FRAME_DEVICES 0x0B                ///< Device detection/capabilities
+#define STATUS_FRAME_RESPONSE_ACK 0x0D           ///< Generic acknowledgement
+#define STATUS_FRAME_CLOCK_RESPONSE (STATUS_FRAME_CLOCK - 1)      ///< Response to clock update (0x14)
+#define STATUS_FRAME_CLOCK 0x15                  ///< Clock/time synchronization
+#define STAUTS_FRAME_CONFIG_RESPONSE (STAUTS_FRAME_CONFIG - 1)    ///< Response to config update (0x16)
+#define STAUTS_FRAME_CONFIG 0x17                 ///< Device configuration
+#define STATUS_FRAME_HEATER_RESPONSE (STATUS_FRAME_HEATER - 1)    ///< Response to heater update (0x32)
+#define STATUS_FRAME_HEATER 0x33                 ///< Heating system status
+#define STATUS_FRAME_AIRCON_MANUAL_RESPONSE (STATUS_FRAME_AIRCON_MANUAL - 1)   ///< Response to AC manual (0x34)
+#define STATUS_FRAME_AIRCON_MANUAL 0x35          ///< AC manual mode status
+#define STATUS_FRAME_AIRCON_AUTO_RESPONSE (STATUS_FRAME_AIRCON_AUTO - 1)       ///< Response to AC auto (0x36)
+#define STATUS_FRAME_AIRCON_AUTO 0x37            ///< AC auto mode status
+#define STATUS_FRAME_TIMER_RESPONSE (STATUS_FRAME_TIMER - 1)      ///< Response to timer update (0x3C)
+#define STATUS_FRAME_TIMER 0x3D                  ///< Timer/schedule status
+#define STATUS_FRAME_AIRCON_MANUAL_INIT_RESPONSE (STATUS_FRAME_AIRCON_MANUAL_INIT - 1)   ///< AC manual init response (0x3E)
+#define STATUS_FRAME_AIRCON_MANUAL_INIT 0x3F    ///< AC manual mode initialization
+#define STATUS_FRAME_AIRCON_AUTO_INIT_RESPONSE (STATUS_FRAME_AIRCON_AUTO_INIT - 1)       ///< AC auto init response (0x40)
+#define STATUS_FRAME_AIRCON_AUTO_INIT 0x41      ///< AC auto mode initialization
+
+/// Header structure for all status frames sent on LIN bus
+/// Contains service ID, protocol headers, and metadata
 struct StatusFrameHeader {  // NOLINT(altera-struct-pack-align)
   // sid
-  uint8_t service_identifier;
-  uint8_t header[10];
-  uint8_t header_2;
-  uint8_t header_3;
+  uint8_t service_identifier;   ///< LIN service identifier
+  uint8_t header[10];           ///< Protocol header (device identifier)
+  uint8_t header_2;             ///< Additional header byte
+  uint8_t header_3;             ///< Additional header byte
   // after checksum
-  uint8_t message_length;
-  uint8_t message_type;
-  uint8_t command_counter;
-  uint8_t checksum;
+  uint8_t message_length;       ///< Length of following data
+  uint8_t message_type;         ///< Message frame type
+  uint8_t command_counter;      ///< Sequence counter for tracking
+  uint8_t checksum;             ///< Data checksum
 } __attribute__((packed));
 
-// Length 20 (0x14)
+/// Heating system status frame (20 bytes)
+/// Contains temperature settings, power levels, and system status
 struct StatusFrameHeater {  // NOLINT(altera-struct-pack-align)
-  TargetTemp target_temp_room;
+  TargetTemp target_temp_room;       ///< Target room temperature
   // Room
-  HeatingMode heating_mode;
-  ElectricPowerLevel el_power_level_a;
-  TargetTemp target_temp_water;
-  ElectricPowerLevel el_power_level_b;
-  EnergyMix energy_mix_a;
+  HeatingMode heating_mode;          ///< Current heating mode (off, eco, comfort, etc.)
+  ElectricPowerLevel el_power_level_a;  ///< Electric heating power level A
+  TargetTemp target_temp_water;      ///< Target water heating temperature
+  ElectricPowerLevel el_power_level_b;  ///< Electric heating power level B
+  EnergyMix energy_mix_a;            ///< Energy source mix A (gas/electric ratio)
   // Ignored by response
-  EnergyMix energy_mix_b;
-  u_int16_t current_temp_water;
-  u_int16_t current_temp_room;
-  OperatingStatus operating_status;
-  uint8_t error_code_low;
-  uint8_t error_code_high;
-  uint8_t heater_unknown_2;
+  EnergyMix energy_mix_b;            ///< Energy source mix B (ignored in responses)
+  u_int16_t current_temp_water;      ///< Current water temperature
+  u_int16_t current_temp_room;       ///< Current room temperature
+  OperatingStatus operating_status;  ///< Heating system operating status
+  uint8_t error_code_low;            ///< Error code low byte
+  uint8_t error_code_high;           ///< Error code high byte
+  uint8_t heater_unknown_2;          ///< Unknown field
 } __attribute__((packed));
 
-// Length 12 (0x0C)
+/// Response frame for heating system updates (12 bytes)
 struct StatusFrameHeaterResponse {  // NOLINT(altera-struct-pack-align)
-  TargetTemp target_temp_room;
+  TargetTemp target_temp_room;       ///< Target room temperature
   // Room
-  HeatingMode heating_mode;
-  ElectricPowerLevel el_power_level_a;
-  TargetTemp target_temp_water;
-  ElectricPowerLevel el_power_level_b;
-  EnergyMix energy_mix_a;
+  HeatingMode heating_mode;          ///< Current heating mode
+  ElectricPowerLevel el_power_level_a;  ///< Electric power level A
+  TargetTemp target_temp_water;      ///< Target water temperature
+  ElectricPowerLevel el_power_level_b;  ///< Electric power level B
+  EnergyMix energy_mix_a;            ///< Energy mix A
   // Ignored?
   EnergyMix energy_mix_b;
 } __attribute__((packed));

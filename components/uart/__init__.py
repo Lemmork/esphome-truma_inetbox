@@ -30,10 +30,14 @@ from esphome.const import (
 )
 from esphome.core import CORE
 
+# Code owner information
 CODEOWNERS = ["@esphome/core"]
+
+# C++ namespace and class definitions for UART components
 uart_ns = cg.esphome_ns.namespace("uart")
 UARTComponent = uart_ns.class_("UARTComponent")
 
+# Platform-specific UART implementations
 IDFUARTComponent = uart_ns.class_(
     "truma_IDFUARTComponent", UARTComponent, cg.Component)
 ESP32ArduinoUARTComponent = uart_ns.class_(
@@ -45,14 +49,21 @@ ESP8266UartComponent = uart_ns.class_(
 RP2040UartComponent = uart_ns.class_(
     "truma_RP2040UartComponent", UARTComponent, cg.Component)
 
+# Generic UART device interface
 UARTDevice = uart_ns.class_("UARTDevice")
 UARTWriteAction = uart_ns.class_("UARTWriteAction", automation.Action)
 UARTDebugger = uart_ns.class_("UARTDebugger", cg.Component, automation.Action)
 UARTDummyReceiver = uart_ns.class_("UARTDummyReceiver", cg.Component)
+
+# Multiple UART instances allowed per configuration
 MULTI_CONF = True
 
 
 def validate_raw_data(value):
+    """Validate and normalize raw data for UART transmission
+    
+    Accepts string, bytes, or list of hex values and converts to bytes.
+    """
     if isinstance(value, str):
         return value.encode("utf-8")
     if isinstance(value, str):
@@ -65,6 +76,10 @@ def validate_raw_data(value):
 
 
 def validate_rx_pin(value):
+    """Validate RX pin configuration
+    
+    Ensures RX pin is valid GPIO input. Prevents use of GPIO16/17 on ESP8266.
+    """
     value = pins.internal_gpio_input_pin_schema(value)
     if CORE.is_esp8266 and value[CONF_NUMBER] >= 16:
         raise cv.Invalid(
@@ -73,6 +88,10 @@ def validate_rx_pin(value):
 
 
 def validate_invert_esp32(config):
+    """Validate invert configuration consistency for ESP32
+    
+    Ensures TX and RX pins have matching invert settings on ESP32.
+    """
     if (
         CORE.is_esp32
         and CONF_TX_PIN in config

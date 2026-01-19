@@ -29,9 +29,11 @@ from esphome.components.uart import (
 from esphome.core import CORE
 from .entity_helpers import count_id_usage
 
+# ESPHome component dependency on UART bus
 DEPENDENCIES = ["uart"]
 CODEOWNERS = ["@Fabian-Schmidt"]
 
+# Configuration key constants for Truma iNetBox component
 CONF_TRUMA_INETBOX_ID = "truma_inetbox_id"
 CONF_LIN_CHECKSUM = "lin_checksum"
 CONF_FAULT_PIN = "fault_pin"
@@ -39,6 +41,7 @@ CONF_OBSERVER_MODE = "observer_mode"
 CONF_NUMBER_OF_CHILDREN = "number_of_children"
 CONF_ON_HEATER_MESSAGE = "on_heater_message"
 
+# C++ namespace and class definitions for code generation
 truma_inetbox_ns = cg.esphome_ns.namespace("truma_inetbox")
 StatusFrameHeater = truma_inetbox_ns.struct("StatusFrameHeater")
 StatusFrameHeaterConstPtr = StatusFrameHeater.operator("ptr").operator("const")
@@ -50,7 +53,8 @@ TrumaiNetBoxAppHeaterMessageTrigger = truma_inetbox_ns.class_(
     automation.Trigger.template(StatusFrameHeaterConstPtr),
 )
 
-# `LIN_CHECKSUM` is a enum class and not a namespace but it works.
+# LIN checksum version mapping (LIN 1.X vs LIN 2.X Enhanced)
+# Note: LIN_CHECKSUM is an enum class, not a namespace
 LIN_CHECKSUM_dummy_ns = truma_inetbox_ns.namespace("LIN_CHECKSUM")
 
 CONF_SUPPORTED_LIN_CHECKSUM = {
@@ -58,6 +62,8 @@ CONF_SUPPORTED_LIN_CHECKSUM = {
     "VERSION_2": LIN_CHECKSUM_dummy_ns.LIN_CHECKSUM_VERSION_2,
 }
 
+# RP2040 hardware UART pin validation map
+# Maps GPIO pins to their corresponding hardware UART instance (0 or 1)
 # [RP2040] Hardware serial of uart validation:
 #   constexpr uint32_t valid_tx_uart_0 = __bitset({0, 12, 16, 28});
 #   constexpr uint32_t valid_tx_uart_1 = __bitset({4, 8, 20, 24});
@@ -65,7 +71,7 @@ CONF_SUPPORTED_LIN_CHECKSUM = {
 #   constexpr uint32_t valid_rx_uart_1 = __bitset({5, 9, 21, 25});
 CONF_RP2040_HARDWARE_UART = {
     CONF_TX_PIN: {
-        # Pin : Hardware UART number
+        # Pin number : Hardware UART instance
         0: 0,
         12: 0,
         16: 0,
@@ -76,7 +82,7 @@ CONF_RP2040_HARDWARE_UART = {
         24: 1,
     },
     CONF_RX_PIN: {
-        # Pin : Hardware UART number
+        # Pin number : Hardware UART instance
         1: 0,
         13: 0,
         17: 0,
@@ -100,7 +106,23 @@ def final_validate_device_schema(
     parity: str = None,
     require_hardware_uart: Optional[bool] = None,
 ):
+    """Validate UART configuration for Truma device
+    
+    Ensures that all required UART parameters match what the device expects,
+    and that pins aren't shared between multiple devices.
+    
+    Args:
+        name: Component name for error messages
+        baud_rate: Required baud rate
+        require_tx: Whether TX pin is required
+        require_rx: Whether RX pin is required
+        stop_bits: Required number of stop bits
+        data_bits: Required number of data bits
+        parity: Required parity setting
+        require_hardware_uart: Hardware UART requirement (for RP2040)
+    """
     def validate_baud_rate(value):
+        """Verify UART baud rate matches required value"""
         if value != baud_rate:
             raise cv.Invalid(
                 f"Component {name} required baud rate {baud_rate} for the uart bus"
@@ -108,6 +130,7 @@ def final_validate_device_schema(
         return value
 
     def validate_pin(opt, device):
+        """Verify UART pins aren't shared between devices"""
         def validator(value):
             if opt in device:
                 raise cv.Invalid(
@@ -120,6 +143,7 @@ def final_validate_device_schema(
         return validator
 
     def validate_stop_bits(value):
+        """Verify UART stop bits match required value"""
         if value != stop_bits:
             raise cv.Invalid(
                 f"Component {name} required stop bits {stop_bits} for the uart bus"
@@ -127,6 +151,7 @@ def final_validate_device_schema(
         return value
 
     def validate_data_bits(value):
+        """Verify UART data bits match required value"""
         if value != data_bits:
             raise cv.Invalid(
                 f"Component {name} required data bits {data_bits} for the uart bus"
@@ -134,6 +159,7 @@ def final_validate_device_schema(
         return value
 
     def validate_parity(value):
+        """Verify UART parity setting matches required value"""
         if value != parity:
             raise cv.Invalid(
                 f"Component {name} required parity {parity} for the uart bus"
@@ -141,6 +167,7 @@ def final_validate_device_schema(
         return value
 
     def validate_hardware_uart(opt, opt2=None, declaration_config=None):
+        """Verify hardware UART constraints (RP2040 specific)"""
         def validator(value):
             if (CORE.is_rp2040):
                 if value[CONF_INVERTED]:

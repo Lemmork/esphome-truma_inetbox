@@ -2,10 +2,16 @@
 
 #include "esphome/core/log.h"
 
+/// Queue-based logging macros for thread-safe logging from both normal and ISR contexts
+/// Messages are queued for later processing to avoid blocking real-time communication
+
+/// Standard queue-based log submission
 #define truma_log(_log_msg_) xQueueSend(this->log_queue_, (void *) &_log_msg_, QUEUE_WAIT_DONT_BLOCK);
 
+/// ISR-safe queue-based log submission (from interrupt service routines)
 #define truma_logfromisr(_log_msg_) xQueueSendFromISR(this->log_queue_, (void *) &_log_msg_, QUEUE_WAIT_DONT_BLOCK);
 
+// Very Verbose level logging (detail-heavy debugging information)
 #if ESPHOME_LOG_LEVEL >= ESPHOME_LOG_LEVEL_VERY_VERBOSE
 #define TRUMA_LOGVV(_log_msg_) truma_log(_log_msg_)
 #define TRUMA_LOGVV_ISR(_log_msg_) truma_logfromisr(_log_msg_)
@@ -14,6 +20,7 @@
 #define TRUMA_LOGVV_ISR(_log_msg_)
 #endif
 
+// Verbose level logging (detailed debugging information)
 #if ESPHOME_LOG_LEVEL >= ESPHOME_LOG_LEVEL_VERBOSE
 #define TRUMA_LOGV(_log_msg_) truma_log(_log_msg_)
 #define TRUMA_LOGV_ISR(_log_msg_) truma_logfromisr(_log_msg_)
@@ -22,6 +29,7 @@
 #define TRUMA_LOGV_ISR(_log_msg_)
 #endif
 
+// Info level logging (general informational messages)
 #if ESPHOME_LOG_LEVEL >= ESPHOME_LOG_LEVEL_INFO
 #define TRUMA_LOGI(_log_msg_) truma_log(_log_msg_)
 #define TRUMA_LOGI_ISR(_log_msg_) truma_logfromisr(_log_msg_)
@@ -30,6 +38,7 @@
 #define TRUMA_LOGI_ISR(_log_msg_)
 #endif
 
+// Warning level logging (potentially problematic situations)
 #if ESPHOME_LOG_LEVEL >= ESPHOME_LOG_LEVEL_WARN
 #define TRUMA_LOGW(_log_msg_) truma_log(_log_msg_)
 #define TRUMA_LOGW_ISR(_log_msg_) truma_logfromisr(_log_msg_)
@@ -38,6 +47,7 @@
 #define TRUMA_LOGW_ISR(_log_msg_)
 #endif
 
+// Error level logging (error conditions that need attention)
 #if ESPHOME_LOG_LEVEL >= ESPHOME_LOG_LEVEL_ERROR
 #define TRUMA_LOGE(_log_msg_) truma_log(_log_msg_)
 #define TRUMA_LOGE_ISR(_log_msg_) truma_logfromisr(_log_msg_)
@@ -46,6 +56,7 @@
 #define TRUMA_LOGE_ISR(_log_msg_)
 #endif
 
+/// Log message types for categorizing queued log entries
 enum class QUEUE_LOG_MSG_TYPE {
   UNKNOWN,
   ERROR_LIN_ANSWER_CAN_WRITE_LIN_ANSWER,

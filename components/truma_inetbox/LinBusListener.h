@@ -25,14 +25,18 @@
 namespace esphome {
 namespace truma_inetbox {
 
+/// LIN protocol checksum versions (LIN 1.X vs LIN 2.X Enhanced)
 enum class LIN_CHECKSUM { LIN_CHECKSUM_VERSION_1, LIN_CHECKSUM_VERSION_2 };
 
+/// Structure for queued LIN bus messages
 struct QUEUE_LIN_MSG {
-  uint8_t current_PID;
-  uint8_t data[8];
-  uint8_t len;
+  uint8_t current_PID;        ///< Protocol Identifier of the message
+  uint8_t data[8];            ///< Message data payload (up to 8 bytes)
+  uint8_t len;                ///< Actual length of data in bytes
 };
 
+/// Base class for LIN bus communication and protocol handling
+/// Manages UART communication, message queuing, and protocol handshake
 class LinBusListener : public PollingComponent, public uart::UARTDevice {
  public:
   float get_setup_priority() const override { return setup_priority::DATA; }
@@ -41,29 +45,40 @@ class LinBusListener : public PollingComponent, public uart::UARTDevice {
   void setup() override;
   void update() override;
 
+  /// Set the LIN checksum version to use
   void set_lin_checksum(LIN_CHECKSUM val) { this->lin_checksum_ = val; }
+  /// Set the chip select (CS) pin for SPI/bus control
   void set_cs_pin(GPIOPin *pin) { this->cs_pin_ = pin; }
+  /// Set the fault detection pin
   void set_fault_pin(GPIOPin *pin) { this->fault_pin_ = pin; }
+  /// Set observer mode (listen-only, no transmission)
   void set_observer_mode(bool val) { this->observer_mode_ = val; }
+  /// Check if LIN bus fault has been detected (persistent over 3 readings)
   bool get_lin_bus_fault() { return fault_on_lin_bus_reported_ > 3; }
 
+  /// Process all queued LIN messages with timeout
   void process_lin_msg_queue(TickType_t xTicksToWait);
+  /// Process all queued debug log entries with timeout
   void process_log_queue(TickType_t xTicksToWait);
 
 #ifdef USE_RP2040
-  // Return is the expected wait time till next data check is recommended.
+  /// RP2040: Handle serial data and return recommended wait time until next check
   u_int32_t onSerialEvent();
 #endif  // USE_RP2040
 
  protected:
   LIN_CHECKSUM lin_checksum_ = LIN_CHECKSUM::LIN_CHECKSUM_VERSION_2;
-  GPIOPin *cs_pin_ = nullptr;
-  GPIOPin *fault_pin_ = nullptr;
-  bool observer_mode_ = false;
+  GPIOPin *cs_pin_ = nullptr;          ///< Chip select pin for SPI control
+  GPIOPin *fault_pin_ = nullptr;       ///< Fault detection pin
+  bool observer_mode_ = false;         ///< If true, only listen without transmitting
 
+  /// Send data response on LIN bus
   void write_lin_answer_(const uint8_t *data, uint8_t len);
+  /// Check and report LIN bus fault condition
   bool check_for_lin_fault_();
+  /// Process incoming LIN order request and return response
   virtual bool answer_lin_order_(const uint8_t pid) = 0;
+  /// Handle received LIN message
   virtual void lin_message_recieved_(const uint8_t pid, const uint8_t *message, uint8_t length) = 0;
 
  private:
