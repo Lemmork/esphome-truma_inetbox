@@ -32,6 +32,7 @@ CONF_SUPPORTED_TYPE = {
     "HEATER_MIX_2": (truma_inetbox_ns.class_("TrumaHeaterBinarySensor", binary_sensor.BinarySensor, cg.Component), TRUMA_BINARY_SENSOR_TYPE_dummy_ns.HEATER_MIX_2),
     "HEATER_ELECTRICITY": (truma_inetbox_ns.class_("TrumaHeaterBinarySensor", binary_sensor.BinarySensor, cg.Component), TRUMA_BINARY_SENSOR_TYPE_dummy_ns.HEATER_ELECTRICITY),
     "HEATER_HAS_ERROR": (truma_inetbox_ns.class_("TrumaHeaterBinarySensor", binary_sensor.BinarySensor, cg.Component), TRUMA_BINARY_SENSOR_TYPE_dummy_ns.HEATER_HAS_ERROR),
+    "ELECTRIC_SUPPLY": (truma_inetbox_ns.class_("TrumaHeaterBinarySensor", binary_sensor.BinarySensor, cg.Component), TRUMA_BINARY_SENSOR_TYPE_dummy_ns.ELECTRIC_SUPPLY),
     # TrumaTimerBinarySensor
     "TIMER_ACTIVE": (truma_inetbox_ns.class_("TrumaTimerBinarySensor", binary_sensor.BinarySensor, cg.Component), TRUMA_BINARY_SENSOR_TYPE_dummy_ns.TIMER_ACTIVE),
     "TIMER_ROOM": (truma_inetbox_ns.class_("TrumaTimerBinarySensor", binary_sensor.BinarySensor, cg.Component), TRUMA_BINARY_SENSOR_TYPE_dummy_ns.TIMER_ROOM),
