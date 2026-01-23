@@ -113,7 +113,7 @@ def _uart_declare_type(value):
     if CORE.is_esp32:
         if CORE.using_arduino:
             return cv.declare_id(ESP32ArduinoUARTComponent)(value)
-        if CORE.using_esp_idf:
+        if CORE.is_esp32:
             return cv.declare_id(IDFUARTComponent)(value)
     if CORE.is_rp2040:
         return cv.declare_id(RP2040UartComponent)(value)

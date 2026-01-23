@@ -287,7 +287,7 @@ FINAL_VALIDATE_SCHEMA = cv.All(
 
 async def to_code(config: Dict[str, Any]) -> None:
     """Generate code for Truma iNetBox component"""
-    if CORE.using_esp_idf:
+    if CORE.is_esp32:
         # Run interrupt on core 0. ESP Home runs on core 1.
         cg.add_build_flag("-DARDUINO_SERIAL_EVENT_TASK_RUNNING_CORE=0")
         # Default Stack Size is 2048. Not enough for my operation.
