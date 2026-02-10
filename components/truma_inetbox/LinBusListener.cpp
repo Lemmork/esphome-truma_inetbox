@@ -87,7 +87,7 @@ void LinBusListener::write_lin_answer_(const uint8_t *data, uint8_t len) {
     log_msg.data[i] = data[i];
   }
   log_msg.data[len] = data_CRC;
-  log_msg.len = len++;
+  log_msg.len = len;
   TRUMA_LOGV(log_msg);
 }
 
@@ -125,9 +125,12 @@ bool LinBusListener::check_for_lin_fault_() {
 
 void LinBusListener::onReceive_() {
   if (!this->check_for_lin_fault_()) {
-    while (this->available()) {
+    uint16_t processed = 0;
+    // Limit per-call processing to avoid starving other tasks on heavy UART traffic.
+    while (this->available() && processed < 64) {
       this->read_lin_frame_();
       this->last_data_recieved_ = micros();
+      processed++;
     }
   }
 }
