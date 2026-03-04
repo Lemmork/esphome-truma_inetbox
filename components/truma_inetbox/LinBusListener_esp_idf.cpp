@@ -67,6 +67,8 @@ void LinBusListener::uartEventTask_(void *args) {
   LinBusListener *instance = (LinBusListener *) args;
   auto uartComp = static_cast<ESPHOME_UART *>(instance->parent_);
   auto uart_num = uartComp->get_hw_serial_number();
+
+#ifdef CUSTOM_ESPHOME_UART
   auto uartEventQueue = uartComp->get_uart_event_queue();
   uart_event_t event;
   for (;;) {
@@ -83,6 +85,16 @@ void LinBusListener::uartEventTask_(void *args) {
       }
     }
   }
+#else
+  // Newer ESPHome IDF UART no longer exposes the internal UART event queue.
+  // Poll buffered UART data and process frames in small chunks.
+  for (;;) {
+    if (instance->available() > 0) {
+      instance->onReceive_();
+    }
+    vTaskDelay(pdMS_TO_TICKS(2));
+  }
+#endif
   vTaskDelete(NULL);
 }
 
