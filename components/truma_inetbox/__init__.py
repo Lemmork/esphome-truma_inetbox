@@ -29,6 +29,11 @@ from esphome.components.uart import (
 from esphome.core import CORE
 from .entity_helpers import count_id_usage
 
+
+def _is_rp2() -> bool:
+    """RP2 family check; CORE.is_rp2040 is deprecated since ESPHome 2026.10 (removed 2027.7)."""
+    return CORE.is_rp2 if hasattr(CORE, "is_rp2") else CORE.is_rp2040
+
 # ESPHome component dependency on UART bus
 DEPENDENCIES: list[str] = ["uart"]
 CODEOWNERS: list[str] = ["@Fabian-Schmidt"]
@@ -173,7 +178,7 @@ def final_validate_device_schema(
     ) -> Callable[[Any], Any]:
         """Verify hardware UART constraints (RP2040 specific)"""
         def validator(value: Any) -> Any:
-            if CORE.is_rp2040:
+            if _is_rp2():
                 if value[CONF_INVERTED]:
                     raise cv.Invalid(
                         f"Component {name} required Hardware UART. Inverted is not supported by Hardware UART."

@@ -30,6 +30,11 @@ from esphome.const import (
 )
 from esphome.core import CORE
 
+
+def _is_rp2() -> bool:
+    """RP2 family check; CORE.is_rp2040 is deprecated since ESPHome 2026.10 (removed 2027.7)."""
+    return CORE.is_rp2 if hasattr(CORE, "is_rp2") else CORE.is_rp2040
+
 # Code owner information
 CODEOWNERS: List[str] = ["@esphome/core"]
 
@@ -115,7 +120,7 @@ def _uart_declare_type(value):
             return cv.declare_id(ESP32ArduinoUARTComponent)(value)
         if CORE.is_esp32:
             return cv.declare_id(IDFUARTComponent)(value)
-    if CORE.is_rp2040:
+    if _is_rp2():
         return cv.declare_id(RP2040UartComponent)(value)
     raise NotImplementedError
 
